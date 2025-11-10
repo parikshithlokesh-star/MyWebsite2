@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Virtual Laser Security</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="dark-mode">
+
+  <div class="app">
+    <div class="header">
+      <h1>🔒 Virtual Laser Security Dashboard</h1>
+      <button id="modeBtn" class="mode-btn">Dark / Light Mode</button>
+    </div>
+
+    <div class="lasers">
+      <div class="laser" id="laser1" data-name="Laser 1">LASER 1</div>
+      <div class="laser" id="laser2" data-name="Laser 2">LASER 2</div>
+      <div class="laser" id="laser3" data-name="Laser 3">LASER 3</div>
+      <div class="laser" id="laser4" data-name="Laser 4">LASER 4</div>
+    </div>
+
+    <div class="buttons">
+      <button id="testBtn" class="btn-test">Test Intruder</button>
+      <button id="resetBtn" class="btn-reset">Reset Alarm</button>
+      <button id="muteBtn" class="btn-mute">Mute Alarm</button>
+    </div>
+
+    <!-- Laser Diagram -->
+    <div class="laser-diagram">
+      <div class="line top" id="line1"></div>
+      <div class="line right" id="line2"></div>
+      <div class="line bottom" id="line3"></div>
+      <div class="line left" id="line4"></div>
+      <div class="center-point"></div>
+    </div>
+
+    <h2>📜 Alert Log</h2>
+    <ul id="log"></ul>
+
+    <footer>
+      <p id="footer1">MADE BY PNR GROUP</p>
+      <p id="footer2">cit college mandya</p>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

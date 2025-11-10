@@ -1,0 +1,132 @@
+const testBtn = document.getElementById('testBtn');
+const resetBtn = document.getElementById('resetBtn');
+const muteBtn = document.getElementById('muteBtn');
+const modeBtn = document.getElementById('modeBtn');
+const logEl = document.getElementById('log');
+const toast = document.getElementById('toast');
+
+const laserIds = ['laser1', 'laser2', 'laser3', 'laser4'];
+const lineIds = ['line1', 'line2', 'line3', 'line4'];
+let timeouts = [];
+let sequenceRunning = false;
+let isMuted = false;
+let toastHideTimeout = null;
+
+// Beep sound
+function playBeep() {
+  if (isMuted) return;
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(800, ctx.currentTime);
+  gain.gain.setValueAtTime(0.3, ctx.currentTime);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.15);
+}
+
+// Toast
+function showToast(msg, duration = 2000) {
+  if (toastHideTimeout) clearTimeout(toastHideTimeout);
+  toast.textContent = msg;
+  toast.classList.add('show');
+  toastHideTimeout = setTimeout(() => {
+    toast.classList.remove('show');
+    toastHideTimeout = null;
+  }, duration);
+}
+
+// Log
+function addLog(msg) {
+  const li = document.createElement('li');
+  const now = new Date();
+  li.textContent = `${now.toLocaleDateString()} ${now.toLocaleTimeString()} - ${msg}`;
+  logEl.prepend(li);
+}
+
+// Laser activation
+function activateLaser(laserId) {
+  document.querySelectorAll('.laser').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(laserId);
+  if (el) el.classList.add('active');
+  blinkDiagram(laserId);
+}
+
+function clearLasers() {
+  document.querySelectorAll('.laser').forEach(el => el.classList.remove('active'));
+  lineIds.forEach(id => {
+    document.getElementById(id).classList.remove('blink');
+  });
+}
+
+// Blink diagram line
+function blinkDiagram(laserId) {
+  const index = laserIds.indexOf(laserId);
+  if (index >= 0) {
+    const line = document.getElementById(lineIds[index]);
+    line.classList.add('blink');
+    setTimeout(() => line.classList.remove('blink'), 1500);
+  }
+}
+
+// Test Intruder
+function testIntruder() {
+  if (sequenceRunning) return;
+  sequenceRunning = true;
+  testBtn.disabled = true;
+
+  const num = Math.floor(Math.random() * 4) + 1;
+  const shuffled = laserIds.slice().sort(() => Math.random() - 0.5).slice(0, num);
+  let accumulatedTime = 0;
+
+  shuffled.forEach(laserId => {
+    const delay = 2000 + Math.floor(Math.random() * 1000);
+    accumulatedTime += delay;
+
+    const t = setTimeout(() => {
+      activateLaser(laserId);
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      playBeep();
+      const name = document.getElementById(laserId).dataset.name;
+      showToast(`🚨 Intruder detected at ${name}`);
+      addLog(`Intruder detected at ${name}`);
+    }, accumulatedTime);
+    timeouts.push(t);
+  });
+
+  const finish = setTimeout(() => {
+    clearLasers();
+    sequenceRunning = false;
+    testBtn.disabled = false;
+  }, accumulatedTime + 2500);
+  timeouts.push(finish);
+}
+
+// Reset
+function resetAlarm() {
+  timeouts.forEach(t => clearTimeout(t));
+  timeouts = [];
+  sequenceRunning = false;
+  testBtn.disabled = false;
+  clearLasers();
+  toast.classList.remove('show');
+}
+
+// Mute
+function muteAlarm() {
+  isMuted = !isMuted;
+  muteBtn.textContent = isMuted ? 'Unmute Alarm' : 'Mute Alarm';
+}
+
+// Dark/Light
+modeBtn.addEventListener('click', () => {
+  document.body.classList.toggle('light-mode');
+  document.body.classList.toggle('dark-mode');
+});
+
+// Events
+testBtn.addEventListener('click', testIntruder);
+resetBtn.addEventListener('click', resetAlarm);
+muteBtn.addEventListener('click', muteAlarm);
